@@ -2,7 +2,6 @@ package lss
 
 import (
 	"github.com/xlab/handysort"
-	//"os"
 	"strconv"
 )
 
@@ -15,6 +14,7 @@ type DirItemList []DirItem
 //-------------------------
 // DirItemList constructors
 //-------------------------
+
 func NewDirItemListFromSlice(items []string) DirItemList {
 	di := make(DirItemList, 0)
 	for _, val := range items {
@@ -132,6 +132,7 @@ func DivideByType(list DirItemList) chan DirItemList {
 		// if someone was a jerk and passed in an empty list
 		if sz == 0 {
 			close(ch)
+			return
 		}
 
 		// grab the first one
@@ -206,6 +207,12 @@ func BuildRangeStringPrefix(item *DirItem) string {
 // ie foo.%04d.mb  1-4,10,100-122
 func BuildRangeString(list DirItemList) string {
 	rangestr := BuildRangeStringPrefix(&list[0]) + "   "
+
+	// is there a range at all?
+	if list[0].Padding == -1 && list[0].Number == -1 {
+		return rangestr
+	}
+
 	last := len(list) - 1
 	lastcontiguous := -1
 	for i, diritem := range list {
