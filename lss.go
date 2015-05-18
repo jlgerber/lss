@@ -7,16 +7,6 @@ import (
 	"os"
 )
 
-func getPath() string {
-	var path string
-	if len(os.Args) > 1 {
-		path = os.Args[1]
-	} else {
-		path, _ = os.Getwd()
-	}
-	return path
-}
-
 func getCwdPath() string {
 	path, _ := os.Getwd()
 	return path
