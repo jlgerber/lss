@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/jlgerber/lss/pack"
 	"os"
@@ -115,10 +115,11 @@ func main() {
 		// unsorted path contents
 		err, contents := lss.FilteredListingFromPath(path, showHidden)
 		if err != nil {
-			println("shit")
-		}
+			fmt.Println(err)
+		} else {
 
-		PrintContents(contents, debug)
+			PrintContents(contents, debug)
+		}
 	}
 
 	app.Run(os.Args)

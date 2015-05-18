@@ -30,9 +30,9 @@ import (
 	"strings"
 )
 
-import lg "lsscmd/lsslog"
+//import lg "lsscmd/lsslog"
 
-var Logr = lg.NewDefaultLogger(lg.DEBUG)
+//var Logr = lg.NewDefaultLogger(lg.DEBUG)
 
 /*
 There are cases where lss cannot solve the problem

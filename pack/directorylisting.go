@@ -1,6 +1,7 @@
 package lss
 
 import (
+	"errors"
 	"os"
 )
 
@@ -9,6 +10,22 @@ func FilteredListingFromPath(path string, filter func(string) bool) (error, []st
 	vsf := make([]string, 0)
 	dir, err := os.Open(path)
 	if err == nil {
+
+		defer func() {
+			if err := dir.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		fileInfo, err := dir.Stat()
+		if err != nil {
+			return err, vsf
+		}
+
+		if !fileInfo.IsDir() {
+			return errors.New("Supplied path:'" + path + "' is not a directory"), vsf
+		}
+
 		filenames, err := dir.Readdirnames(0)
 		if err == nil {
 
@@ -21,8 +38,6 @@ func FilteredListingFromPath(path string, filter func(string) bool) (error, []st
 				}
 			}
 		}
-
 	}
 	return err, vsf
-
 }
