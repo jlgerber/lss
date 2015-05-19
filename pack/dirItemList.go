@@ -72,12 +72,20 @@ func (dil DirItemList) String() string {
 // DirItemList and separate it into two lists - one for padded items
 // and one for non-padded items. The trick is that the non-padded items
 // are context dependent
-func SortDirItemList(list DirItemList) (DirItemList, DirItemList) {
+func SortDirItemList(list DirItemList) (DirItemList, DirItemList, int) {
+	maxlen := 0 // max length
+	clen := 0   // current length
 	padded := make(DirItemList, 0)
 	unpadded := make(DirItemList, 0)
 
 	// here we go
 	for _, diritem := range list {
+
+		clen = diritem.ApproxLen()
+		if clen > maxlen {
+			maxlen = clen
+		}
+
 		padding := diritem.Padded()
 		switch padding {
 		case PADDED_NO:
@@ -104,7 +112,7 @@ func SortDirItemList(list DirItemList) (DirItemList, DirItemList) {
 		println("####")
 	}
 
-	return padded, unpadded
+	return padded, unpadded, maxlen
 }
 
 func same(di1 *DirItem, di2 *DirItem) bool {
@@ -204,8 +212,9 @@ func BuildRangeStringPrefix(item *DirItem) string {
 	}
 }
 
-func paddedCnt(x int) string {
-	padding := 5 // arbitrary true
+// PadInt - generate a string from the input integer, padding it
+// with "0s" appropriately.
+func PadInt(x, padding int) string {
 	xPadding := NumDigits(x)
 	sz := padding - xPadding
 
@@ -216,7 +225,13 @@ func paddedCnt(x int) string {
 	return fmt.Sprintf("%d%s", x, strings.Repeat(" ", sz))
 }
 
-func PaddToSize(source string, toSize int, prefix bool) string {
+// PadToSize - given a source string, a target size, and an indication
+// of where the padding comes ( prefix or not), generate a space padded
+// version of the source string.
+// egs
+// PadToSize("foo",5,true) return "  foo"
+// PadToSize("foo",5,false) return "foo  "
+func PadToSize(source string, toSize int, prefix bool) string {
 	sz := len(source)
 	padding := toSize - sz
 	if padding <= 0 {
@@ -234,13 +249,14 @@ func PaddToSize(source string, toSize int, prefix bool) string {
 // a channel of type string. Each string is in condensed range form
 // ie foo.%04d.mb  1-4,10,100-122
 func BuildRangeString(list DirItemList, rangePadding int) string {
+	padding := 5 // arbitrary true
 
 	if len(list) == 1 {
-		return fmt.Sprintf("%s %s", paddedCnt(1), list[0].String())
+		return fmt.Sprintf("%s %s", PadInt(1, padding), list[0].String())
 	}
 
-	rangestr := PaddToSize(BuildRangeStringPrefix(&list[0]), rangePadding, false)
-	rangestr = paddedCnt(len(list)) + " " + rangestr + "    "
+	rangestr := PadToSize(BuildRangeStringPrefix(&list[0]), rangePadding, false)
+	rangestr = PadInt(len(list), padding) + " " + rangestr + "    "
 
 	// is there a range at all?
 	if list[0].Padding == -1 && list[0].Number == -1 {

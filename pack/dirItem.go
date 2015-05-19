@@ -216,6 +216,16 @@ func (di *DirItem) GetExtension() string {
 	return ""
 }
 
+// ApproxLen method used to calculate the approximate length of the DirItem for calculating padding
+func (di *DirItem) ApproxLen() int {
+	if di.Padding > 1 {
+		return len(di.Prefix) + len(di.Extension) + 6 // 1 period for ext. 1 for period before num, 4 for %0#d
+	} else if di.Padding >= 0 {
+		return len(di.Prefix) + len(di.Extension) + 3
+	}
+	return len(di.Prefix)
+}
+
 // GetName
 //     *DirItem method which returns a string representation of the struct.
 //
