@@ -13,6 +13,7 @@ func getCwdPath() string {
 }
 
 func PrintContents(contents []string, debug bool) {
+	rangePadding := 25 // this needs to be replaced
 
 	// cast to a Stringlist and call NaturalSort()
 	lss.Stringlist(contents).NaturalSort()
@@ -29,11 +30,11 @@ func PrintContents(contents []string, debug bool) {
 	padded, unpadded := lss.SortDirItemList(dil)
 
 	for x := range lss.DivideByType(unpadded) {
-		println(lss.BuildRangeString(x))
+		println(lss.BuildRangeString(x, rangePadding))
 
 	}
 	for x := range lss.DivideByType(padded) {
-		println(lss.BuildRangeString(x))
+		println(lss.BuildRangeString(x, rangePadding))
 
 	}
 }

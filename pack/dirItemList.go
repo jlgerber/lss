@@ -1,8 +1,10 @@
 package lss
 
 import (
+	"fmt"
 	"github.com/xlab/handysort"
 	"strconv"
+	"strings"
 )
 
 //-------------------------
@@ -202,11 +204,43 @@ func BuildRangeStringPrefix(item *DirItem) string {
 	}
 }
 
+func paddedCnt(x int) string {
+	padding := 5 // arbitrary true
+	xPadding := NumDigits(x)
+	sz := padding - xPadding
+
+	if sz <= 0 {
+		return strconv.Itoa(x)
+	}
+
+	return fmt.Sprintf("%d%s", x, strings.Repeat(" ", sz))
+}
+
+func PaddToSize(source string, toSize int, prefix bool) string {
+	sz := len(source)
+	padding := toSize - sz
+	if padding <= 0 {
+		return source
+	}
+
+	// do i stick the padding in front?
+	if prefix {
+		return fmt.Sprintf("%s%s", strings.Repeat(" ", padding), source)
+	}
+	return fmt.Sprintf("%s%s", source, strings.Repeat(" ", padding))
+}
+
 // BuildRangeSlice takes an hemogenous DirItemList and returns
 // a channel of type string. Each string is in condensed range form
 // ie foo.%04d.mb  1-4,10,100-122
-func BuildRangeString(list DirItemList) string {
-	rangestr := BuildRangeStringPrefix(&list[0]) + "   "
+func BuildRangeString(list DirItemList, rangePadding int) string {
+
+	if len(list) == 1 {
+		return fmt.Sprintf("%s %s", paddedCnt(1), list[0].String())
+	}
+
+	rangestr := PaddToSize(BuildRangeStringPrefix(&list[0]), rangePadding, false)
+	rangestr = paddedCnt(len(list)) + " " + rangestr + "    "
 
 	// is there a range at all?
 	if list[0].Padding == -1 && list[0].Number == -1 {
