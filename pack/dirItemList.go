@@ -295,3 +295,77 @@ func BuildRangeString(list DirItemList, rangePadding int) string {
 	}
 	return rangestr
 }
+
+// RangeStringsFromSortedItemList takes a sorted DirItemList and returns a channel on which sorted strings are returned.
+// Your first question is probably why? Well, it does some internal kungfu to take that item list and reduce it
+// into its final output.
+func RangeStringsFromSortedItemList(itemList DirItemList) chan string {
+
+	// sort DirItems into padded and nonPadded
+	padded, unpadded, maxlen := SortDirItemList(itemList)
+	paddedChan := DivideByType(padded)
+	unpaddedChan := DivideByType(unpadded)
+
+	ch := make(chan string)
+
+	go func() {
+		prBuff := make([]string, 0)  // padded Range buffer
+		uprBuff := make([]string, 0) // unpadded Range buffer
+
+		for {
+
+			paddedRange, prOk := <-paddedChan
+			unpaddedRange, uprOk := <-unpaddedChan
+
+			// if we fetched data from the channel
+			if prOk {
+				prBuff = append(prBuff, BuildRangeString(paddedRange, maxlen))
+			}
+			// if we fetched data from the channel
+			if uprOk {
+				uprBuff = append(uprBuff, BuildRangeString(unpaddedRange, maxlen))
+			}
+			// if both channels are empty lets beat it
+			if len(prBuff) == 0 && len(uprBuff) == 0 {
+				break
+			}
+			// ok, we move on.
+			switch {
+			case len(prBuff) > 0 && len(uprBuff) > 0:
+				// buffer entries are in the form
+				// count name range eg
+				// 2 foo.%04d.exr  4-5
+				// we use the fields command to split the string up into a slice
+				// and take the middle index (1)
+				if strings.Fields(prBuff[0])[1] < strings.Fields(uprBuff[0])[1] {
+					ch <- prBuff[0]
+					prBuff = prBuff[1:]
+				} else {
+					ch <- uprBuff[0]
+					uprBuff = uprBuff[1:]
+				}
+			case len(prBuff) > 0:
+				ch <- prBuff[0]
+				prBuff = prBuff[1:]
+			case len(uprBuff) > 0:
+				ch <- uprBuff[1]
+				uprBuff = uprBuff[1:]
+			}
+
+		}
+		close(ch)
+	}()
+
+	return ch
+}
+
+func RangesChanFromStringSlice(contents []string) chan string {
+
+	// cast to a Stringlist and call NaturalSort()
+	Stringlist(contents).NaturalSort()
+
+	// build a dirItemList from the contents slice
+	dil := NewDirItemListFromSlice(contents)
+
+	return RangeStringsFromSortedItemList(dil)
+}

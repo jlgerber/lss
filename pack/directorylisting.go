@@ -41,3 +41,8 @@ func FilteredListingFromPath(path string, filter func(string) bool) (error, []st
 	}
 	return err, vsf
 }
+
+func GetCwdPath() string {
+	path, _ := os.Getwd()
+	return path
+}
