@@ -7,26 +7,6 @@ import (
 	"os"
 )
 
-func PrintContents(contents []string, debug bool) {
-
-	// cast to a Stringlist and call NaturalSort()
-	lss.Stringlist(contents).NaturalSort()
-
-	if debug {
-		println("Natural Sort Contents:")
-		println(lss.Stringlist(contents).String())
-		println("-------------------------")
-	}
-
-	// build a dirItemList from the contents slice
-	dil := lss.NewDirItemListFromSlice(contents)
-
-	for item := range lss.RangeStringsFromSortedItemList(dil) {
-		fmt.Println(item)
-	}
-
-}
-
 func main() {
 
 	cli.AppHelpTemplate = lss.AppHelpTemplate
@@ -74,8 +54,6 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			//			PrintContents(contents, debug)
-
 			for value := range lss.RangesChanFromStringSlice(contents) {
 				fmt.Println(value)
 			}
